@@ -2,7 +2,7 @@ export default (): Object => ({
     // fonts
     fontFamily: '',
     // colours
-    primary: '',
+    primary: '#00CBFF',
     secondary: '',
     danger: '',
     warning: '',

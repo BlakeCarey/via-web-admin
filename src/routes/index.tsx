@@ -10,6 +10,7 @@ import Routes from 'routes/Routes';
 import { history } from 'config';
 
 const routes: RoutesType = [
+    { path: '/', component: LoginPage },
     { path: '/login', component: LoginPage }
 ];
 
