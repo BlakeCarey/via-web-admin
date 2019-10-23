@@ -4,7 +4,7 @@ import styled from 'styled-components';
 // components
 import InputControl from 'components/Shared/Input/InputControl';
 
-type PropTypes = {
+export type PropTypes = {
     name: string;
     variant: 'text' | 'number' | 'password';
     placeholder: string;
