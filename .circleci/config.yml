@@ -20,7 +20,7 @@ jobs:
           key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/via-web-admin
-  dependencies:
+  bundle_dependencies:
     docker:
       - image: circleci/node:10.16.3
     working_directory: ~/via-web-admin
@@ -78,7 +78,7 @@ workflows:
     jobs:
       - checkout_code:
           <<: *main_branches
-      - dependencies:
+      - bundle_dependencies:
           requires:
             - checkout_code
           <<: *main_branches
