@@ -8,11 +8,6 @@ main_branches: &main_branches
         tags:
             ignore: /.*/
 
-tags_only: &tags_only
-    filters:
-        tags:
-            only: /.*/
-
 version: 2
 jobs:
   checkout_code:
