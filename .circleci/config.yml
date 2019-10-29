@@ -124,12 +124,12 @@ workflows:
                   requires:
                       - bundle_dependencies
             - hold:
-                  <<: *version_tags_only
+                  <<: *tags_only
                   type: approval
                   requires:
                       - build
                       - test
             - deploy:
-                  <<: *version_tags_only
+                  <<: *tags_only
                   requires:
                       - hold
