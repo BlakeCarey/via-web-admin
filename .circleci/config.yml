@@ -8,6 +8,11 @@ main_branches: &main_branches
     tags:
       ignore: /.*/
 
+tags_only: &tags_only
+    filters:
+        tags:
+            only: /.*/
+
 version: 2
 jobs:
   checkout_code:
@@ -72,7 +77,16 @@ jobs:
             - v1-dependencies-{{ checksum "package.json" }}
       - run:
           name: Running tests
-          command: npm run test
+          command: npm run test          
+  deploy:
+      docker:
+        - image: buildpack-deps:trusty
+      steps:
+        - checkout
+        - run:
+            name: Deploy Master to Heroku
+            command: |
+              git push https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git master
 
 workflows:
   version: 2
@@ -92,3 +106,30 @@ workflows:
           <<: *main_branches
           requires:
             - bundle_dependencies
+
+  'Build, Test, and Deploy':
+        jobs:
+            - checkout_code:
+                  <<: *tags_only
+            - bundle_dependencies:
+                  requires:
+                      - checkout_code
+                  <<: *tags_only
+            - build:
+                  <<: *tags_only
+                  requires:
+                      - bundle_dependencies
+            - test:
+                  <<: *tags_only
+                  requires:
+                      - bundle_dependencies
+            - hold:
+                  <<: *version_tags_only
+                  type: approval
+                  requires:
+                      - build
+                      - test
+            - deploy:
+                  <<: *version_tags_only
+                  requires:
+                      - hold
