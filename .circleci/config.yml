@@ -1,9 +1,99 @@
-machine:
-  node:
-    version: 8.12.0
-test:
-  override:
-    - npm test -- --coverage
-  post:
-    - npm install -g codeclimate-test-reporter
-    - codeclimate-test-reporter < coverage/lcov.info
+main_branches: &main_branches
+    filters:
+        branches:
+            only:
+                - circleci
+                - develop
+                - master
+        tags:
+            ignore: /.*/
+
+tags_only: &tags_only
+    filters:
+        tags:
+            only: /.*/
+
+version: 2
+jobs:
+  checkout_code:
+        docker:
+            - image: circleci/node:10.16.3
+        working_directory: ~/via-web-admin
+        steps:
+            - checkout
+            - save_cache:
+                  key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+                  paths:
+                      - ~/via-web-admin
+  dependencies:
+        docker:
+            - image: circleci/node:10.16.3
+        working_directory: ~/via-web-admin
+        steps:
+            - restore_cache:
+                  keys:
+                      - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+            - restore_cache:
+                  keys:
+                      - v1-dependencies-{{ checksum "package.json" }}
+            - run:
+                  name: Installing Dependencies
+                  command: npm install
+            - save_cache:
+                  paths:
+                      - node_modules
+                  key: v1-dependencies-{{ checksum "package.json" }}  
+  build:    
+    docker:      
+      - image: circleci/node:10.16.3
+    working_directory: ~/via-web-admin    
+    steps:      
+      - checkout      
+      - restore_cache: 
+      # special step to restore the dependency cache          
+          key: dependency-cache-{{ checksum "package.json" }}
+      - restore_cache:
+          key:
+              - v1-dependencies-{{ checksum "package.json" }}
+      - run:
+            name: Build Project
+            command: npm run build
+      - save_cache:
+            key: v1-build-{{ .Environment.CIRCLE_SHA1 }}
+            paths:
+                - ~/via-web-admin/build
+  test:
+        docker:
+            - image: circleci/node:10.16.3
+        working_directory: ~/via-web-admin
+        steps:
+            - restore_cache:
+                  keys:
+                      - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+            - restore_cache:
+                  keys:
+                      - v1-dependencies-{{ checksum "package.json" }}
+            - run:
+                  name: Running tests
+                  command: npm run test
+
+
+workflows:
+    version: 2.1
+    'Build and Test':
+        jobs:
+            - checkout_code:
+                  <<: *main_branches
+            - bundle_dependencies:
+                  requires:
+                      - checkout_code
+                  <<: *main_branches
+            - build:
+                  <<: *main_branches
+                  requires:
+                      - bundle_dependencies
+            - test:
+                  <<: *main_branches
+                  requires:
+                      - bundle_dependencies
+      
