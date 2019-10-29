@@ -47,10 +47,10 @@ jobs:
       - checkout
       - restore_cache:
           # special step to restore the dependency cache
-          key: 
+          keys: 
             - v1-repo-{{ .Environment.CIRCLE_SHA1 }}
       - restore_cache:
-          key:
+          keys:
             - v1-dependencies-{{ checksum "package.json" }}            
       - run:
           name: Build Project
