@@ -73,7 +73,7 @@ jobs:
           command: npm run test
 
 workflows:
-  version: 2.1
+  version: 2
   "Build and Test":
     jobs:
       - checkout_code:
